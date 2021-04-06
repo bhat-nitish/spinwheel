@@ -9,5 +9,7 @@ namespace Spinwheel.Services
         Promise<int> GetPlayerMultiplier();
 
         Promise<int> GetInitialWin();
+
+        IPromise UpdatePlayerBalance(long playerBalance);
     }
 }

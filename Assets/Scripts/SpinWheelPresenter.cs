@@ -66,7 +66,16 @@ namespace Spinwheel.Presenters
                     Multiplier = result.Multiplier,
                     InitialWin = result.InitialWin
                 };
-                _player.Balance += +_player.Balance + (_playerSpin.Multiplier * _playerSpin.InitialWin);
+                UpdatePlayerBalance();
+            });
+        }
+
+        private void UpdatePlayerBalance()
+        {
+            long balance = _player.Balance + (_playerSpin.Multiplier * _playerSpin.InitialWin);
+            _model.SetPlayerBalance(balance).Then(() =>
+            {
+                _player.Balance = balance;
                 RaisePlayerBalanceUpdated();
             });
         }

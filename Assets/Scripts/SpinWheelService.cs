@@ -9,12 +9,13 @@ namespace Spinwheel.Services
 
         public SpinWheelService()
         {
-            _api = new GameplayApi();
-            _api.Initialise();
+            
+            InitializeApi();
         }
 
         public void InitializeApi()
         {
+            _api = new GameplayApi();
             _api.Initialise();
         }
 
@@ -35,6 +36,11 @@ namespace Spinwheel.Services
         public Promise<int> GetInitialWin()
         {
             return _api.GetInitialWin();
+        }
+
+        public IPromise UpdatePlayerBalance(long playerBalance)
+        {
+            return _api.SetPlayerBalance(playerBalance);
         }
     }
 }

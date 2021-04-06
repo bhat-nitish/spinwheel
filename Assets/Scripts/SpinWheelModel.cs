@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Promises;
 using Spinwheel.Services;
 using UnityEngine;
+using Promise = Promises.Promise;
 
 namespace Spinwheel.Models
 {
@@ -44,6 +45,16 @@ namespace Spinwheel.Models
                         .Done(() => { playerSpinPromise.Resolve(model); });
                 });
             return playerSpinPromise;
+        }
+
+        public IPromise SetPlayerBalance(long balance)
+        {
+            Promises.Promise playerBalancePromise = new Promises.Promise();
+            _service.UpdatePlayerBalance(balance)
+                .Then(() => { })
+                .Catch((error) => { Debug.Log(error.Message); })
+                .Done(() => { playerBalancePromise.Resolve(); });
+            return playerBalancePromise;
         }
     }
 }

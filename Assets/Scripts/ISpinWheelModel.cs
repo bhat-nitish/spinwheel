@@ -10,5 +10,7 @@ namespace Spinwheel.Models
         IPromise<PlayerModel> GetPlayerModel();
 
         IPromise<PlayerSpinModel> GetPlayerSpinValues();
+
+        IPromise SetPlayerBalance(long balance);
     }
 }
