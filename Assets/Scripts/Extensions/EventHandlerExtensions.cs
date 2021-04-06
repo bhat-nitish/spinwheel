@@ -16,7 +16,7 @@ public static class EventHandlerExtensions
     /// </summary>
     /// <param name="sender">The sender that triggered the event. Pass 'this' if not sure</param>
     /// <param name="args">Any arguments that need to be passed to subscribers. Please use Trigger if no arguments are needed</param>
-    public static void TriggerWithData(this EventHandler handler, object sender, EventArgs args)
+    public static void TriggerWithData(this EventHandler handler, object sender, System.EventArgs args)
     {
         handler?.Invoke(sender, args);
     }

@@ -11,5 +11,7 @@ namespace Spinwheel.Presenters
         int GetPlayerMultiplier();
 
         long GetPlayerIniialWin();
+
+        void SpinWheel();
     }
 }

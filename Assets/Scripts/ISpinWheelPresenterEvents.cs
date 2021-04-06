@@ -1,4 +1,5 @@
 using System;
+using EventArgs;
 
 namespace Spinwheel.Presenters
 {
@@ -6,6 +7,6 @@ namespace Spinwheel.Presenters
     {
         event EventHandler PlayerModelSet;
 
-        event EventHandler PlayerModelUpdated;
+        event EventHandler<PlayerBalanceUpdatedEventArgs> PlayerBalanceUpdated;
     }
 }

@@ -2,11 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using EventArgs;
 using Spinwheel.Presenters;
 using TMPro;
 using UnityEngine;
 using Zenject;
 using Extensions;
+using UnityEngine.UIElements;
+using Button = UnityEngine.UI.Button;
 
 namespace Spinwheel.Views
 {
@@ -32,11 +35,17 @@ namespace Spinwheel.Views
 
         public TextMeshProUGUI _playerInitialWinField;
 
+        public Button _spinButton;
+
+        public Button _spinButtonDown;
+
         #endregion
 
         #region Event Handler Subscription
 
-        private void OnPlayerModelSet(object sender, EventArgs e) => SetPlayer();
+        private void OnPlayerModelSet(object sender, System.EventArgs e) => SetPlayer();
+
+        private void OnPlayerBalanceUpdated(object sender, PlayerBalanceUpdatedEventArgs e) => UpdatePlayerBalance(e);
 
         #endregion
 
@@ -49,21 +58,55 @@ namespace Spinwheel.Views
         private void SubscribeToPresenterEvents()
         {
             _presenter.PlayerModelSet += OnPlayerModelSet;
+            _presenter.PlayerBalanceUpdated += OnPlayerBalanceUpdated;
         }
 
         private void UnSubscribeToPresenterEvents()
         {
             _presenter.PlayerModelSet -= OnPlayerModelSet;
+            _presenter.PlayerBalanceUpdated -= OnPlayerBalanceUpdated;
         }
 
         private void Awake()
         {
             SubscribeToPresenterEvents();
+            RegisterButtonClicks();
+            DisableSpinButton();
+        }
+
+        private void RegisterButtonClicks()
+        {
+            _spinButton.onClick.AddListener(SpinWheel);
         }
 
         private void OnDestroy()
         {
             UnSubscribeToPresenterEvents();
+        }
+
+        #region GamePlay
+
+        private void SetPlayer()
+        {
+            _playerBalance = _presenter.GetPlayerBalance();
+            SetPlayerBalance();
+            EnableSpinButton();
+        }
+
+        private void UpdatePlayerBalance(PlayerBalanceUpdatedEventArgs playerValues)
+        {
+            UpdateSpinValues();
+            SetPlayerBalance();
+            SetPlayerInitialWin();
+            SetPlayerMultiplier();
+            EnableSpinButton();
+        }
+
+        private void UpdateSpinValues()
+        {
+            _playerBalance = _presenter.GetPlayerBalance();
+            _playerMultiplier = _presenter.GetPlayerMultiplier();
+            _playerInitialWin = _presenter.GetPlayerIniialWin();
         }
 
         private void SetPlayerBalance()
@@ -81,12 +124,22 @@ namespace Spinwheel.Views
             _playerInitialWinField.SetText(_playerInitialWin.ToCurrency());
         }
 
-        #region GamePlay
-
-        private void SetPlayer()
+        private void DisableSpinButton()
         {
-            _playerBalance = _presenter.GetPlayerBalance();
-            SetPlayerBalance();
+            _spinButton.gameObject.SetActive(false);
+            _spinButtonDown.gameObject.SetActive(true);
+        }
+
+        private void EnableSpinButton()
+        {
+            _spinButton.gameObject.SetActive(true);
+            _spinButtonDown.gameObject.SetActive(false);
+        }
+
+        private void SpinWheel()
+        {
+            DisableSpinButton();
+            _presenter.SpinWheel();
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using EventArgs;
 using Spinwheel.Models;
 using Spinwheel.Presenters;
 using UnityEngine;
@@ -19,7 +20,7 @@ namespace Spinwheel.Presenters
 
         public event EventHandler PlayerModelSet;
 
-        public event EventHandler PlayerModelUpdated;
+        public event EventHandler<PlayerBalanceUpdatedEventArgs> PlayerBalanceUpdated;
 
         #endregion
 
@@ -55,6 +56,21 @@ namespace Spinwheel.Presenters
             });
         }
 
+        private void GetSpinWheelValues()
+        {
+            var spinWheelPromise = _model.GetPlayerSpinValues();
+            spinWheelPromise.Then((result) =>
+            {
+                _playerSpin = new PlayerSpinModel()
+                {
+                    Multiplier = result.Multiplier,
+                    InitialWin = result.InitialWin
+                };
+                _player.Balance += +_player.Balance + (_playerSpin.Multiplier * _playerSpin.InitialWin);
+                RaisePlayerBalanceUpdated();
+            });
+        }
+
         #endregion
 
         #region Event Invocation
@@ -64,9 +80,22 @@ namespace Spinwheel.Presenters
             PlayerModelSet.Trigger(this);
         }
 
-        private void RaisePlayerModelUpdated()
+        private void RaisePlayerBalanceUpdated()
         {
-            PlayerModelUpdated.Trigger(this);
+            PlayerBalanceUpdated.TriggerWithData(this, new PlayerBalanceUpdatedEventArgs()
+            {
+                Multipler = _playerSpin.Multiplier,
+                InitialWin = _playerSpin.InitialWin
+            });
+        }
+
+        #endregion
+
+        #region GamePlay
+
+        public void SpinWheel()
+        {
+            GetSpinWheelValues();
         }
 
         #endregion
