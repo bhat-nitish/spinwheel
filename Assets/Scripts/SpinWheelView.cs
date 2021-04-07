@@ -25,6 +25,10 @@ namespace Spinwheel.Views
 
         private long _playerInitialWin;
 
+        private bool _shouldSpin;
+
+        private int _spinSpeed = 15;
+
         #endregion
 
         #region Properties
@@ -38,6 +42,10 @@ namespace Spinwheel.Views
         public Button _spinButton;
 
         public Button _spinButtonDown;
+
+        public GameObject _spinWheel;
+
+        public GameObject _spinWheelPointer;
 
         #endregion
 
@@ -70,8 +78,23 @@ namespace Spinwheel.Views
         private void Awake()
         {
             SubscribeToPresenterEvents();
+            DisableSpinAnimation();
             RegisterButtonClicks();
             DisableSpinButton();
+        }
+
+        private void DisableSpinAnimation()
+        {
+            var anim = _spinWheel.GetComponent<Animator>();
+            anim.enabled = false;
+            
+        }
+
+        private void EnableSpinAnimation()
+        {
+            var anim = _spinWheel.GetComponent<Animator>();
+            anim.enabled = true;
+            anim.Play("Base Layer.WheelAnim");
         }
 
         private void RegisterButtonClicks()
@@ -85,6 +108,40 @@ namespace Spinwheel.Views
         }
 
         #region GamePlay
+
+        private void EnableSpin()
+        {
+            _shouldSpin = true;
+            Spin();
+           // StartCoroutine(StartWheelSpin());
+        }
+
+        private void DisableSpin()
+        {
+            _shouldSpin = false;
+           // StopCoroutine(StartWheelSpin());
+            StopSpin();
+        }
+
+        IEnumerator StartWheelSpin()
+        {
+            while (_shouldSpin)
+            {
+                yield return new WaitForSeconds(1f);
+                Spin();
+            }
+        }
+
+        private void Spin()
+        {
+            EnableSpinAnimation();
+            //_spinWheel.transform.Rotate(0, 0, -_spinSpeed);
+        }
+
+        private void StopSpin()
+        {
+            DisableSpinAnimation();
+        }
 
         private void SetPlayer()
         {
@@ -100,6 +157,7 @@ namespace Spinwheel.Views
             SetPlayerInitialWin();
             SetPlayerMultiplier();
             EnableSpinButton();
+            DisableSpin();
         }
 
         private void UpdateSpinValues()
@@ -138,6 +196,7 @@ namespace Spinwheel.Views
 
         private void SpinWheel()
         {
+            EnableSpin();
             DisableSpinButton();
             _presenter.SpinWheel();
         }
