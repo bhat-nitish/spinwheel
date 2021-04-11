@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using DefaultNamespace;
 using EventArgs;
 using Spinwheel.Presenters;
 using TMPro;
 using UnityEngine;
 using Zenject;
 using Extensions;
+using ModestTree;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
+using Random = UnityEngine.Random;
 
 namespace Spinwheel.Views
 {
@@ -27,7 +30,15 @@ namespace Spinwheel.Views
 
         private bool _shouldSpin;
 
-        private int _spinSpeed = 15;
+        private float _normalSpeedMultiplier = 1;
+
+        private float _slowSpeedMultiplier = 0.5f;
+
+        private float _stoppingSpeedMultiplier = 0.2f;
+
+        private float _targetMultiplierAngle = 0;
+
+        private SpinMode _spinMode;
 
         #endregion
 
@@ -78,23 +89,8 @@ namespace Spinwheel.Views
         private void Awake()
         {
             SubscribeToPresenterEvents();
-            DisableSpinAnimation();
             RegisterButtonClicks();
             DisableSpinButton();
-        }
-
-        private void DisableSpinAnimation()
-        {
-            var anim = _spinWheel.GetComponent<Animator>();
-            anim.enabled = false;
-            
-        }
-
-        private void EnableSpinAnimation()
-        {
-            var anim = _spinWheel.GetComponent<Animator>();
-            anim.enabled = true;
-            anim.Play("Base Layer.WheelAnim");
         }
 
         private void RegisterButtonClicks()
@@ -112,35 +108,86 @@ namespace Spinwheel.Views
         private void EnableSpin()
         {
             _shouldSpin = true;
-            Spin();
-           // StartCoroutine(StartWheelSpin());
+            _spinMode = SpinMode.Normal;
+            _targetMultiplierAngle = 0;
+            StartCoroutine(Spin());
         }
 
         private void DisableSpin()
         {
             _shouldSpin = false;
-           // StopCoroutine(StartWheelSpin());
-            StopSpin();
-        }
-
-        IEnumerator StartWheelSpin()
-        {
-            while (_shouldSpin)
-            {
-                yield return new WaitForSeconds(1f);
-                Spin();
-            }
-        }
-
-        private void Spin()
-        {
-            EnableSpinAnimation();
-            //_spinWheel.transform.Rotate(0, 0, -_spinSpeed);
         }
 
         private void StopSpin()
         {
-            DisableSpinAnimation();
+            SetPlayerMultiplier();
+            EnableSpinButtonAndResetRewards();
+        }
+
+        IEnumerator Spin()
+        {
+            while (_shouldSpin)
+            {
+                if (_spinMode == SpinMode.Normal)
+                {
+                    _spinWheel.transform.Rotate(0, 0, _normalSpeedMultiplier);
+                    yield return new WaitForEndOfFrame();
+                }
+                else if (_spinMode == SpinMode.Slow)
+                {
+                    float randomTimeInSeconds = Random.Range(1f, 5f);
+                    float elapsedTime = 0;
+                    while (elapsedTime < randomTimeInSeconds)
+                    {
+                        _spinWheel.transform.Rotate(0, 0, _slowSpeedMultiplier);
+                        elapsedTime += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+
+                    while (Math.Abs(_spinWheel.transform.eulerAngles.z - _targetMultiplierAngle) > 1)
+                    {
+                        _spinWheel.transform.Rotate(0, 0, _stoppingSpeedMultiplier);
+                        yield return new WaitForEndOfFrame();
+                    }
+
+                    DisableSpin();
+                    SetPlayerMultiplier();
+                    _spinMode = SpinMode.None;
+                    for (float timer = 0; timer < 3f; timer += Time.deltaTime)
+                    {
+                        float progress = timer / 3f;
+                        _playerInitialWinField.SetText(((long) Mathf.Lerp(0, _playerInitialWin, progress))
+                            .ToCurrency());
+                        _playerBalanceField.SetText(
+                            ((long) Mathf.Lerp(0, _playerBalance, progress)).ToCurrency());
+                        yield return null;
+                    }
+
+                    EnableSpinButton();
+                }
+            }
+        }
+
+        IEnumerator AnimateCount()
+        {
+            for (float timer = 0; timer < 3f; timer += Time.deltaTime)
+            {
+                float progress = timer / 3f;
+                _playerInitialWinField.SetText(((long) Mathf.Lerp(0, _playerInitialWin, progress)).ToCurrency());
+                _playerBalanceField.SetText(
+                    ((long) Mathf.Lerp(0, _playerBalance, progress)).ToCurrency());
+                yield return null;
+            }
+
+            EnableSpinButtonAndResetRewards();
+        }
+
+        private void EnableSpinButtonAndResetRewards()
+        {
+            // StopCoroutine(AnimateCount());
+            DisableSpin();
+            EnableSpinButton();
+            _spinMode = SpinMode.None;
         }
 
         private void SetPlayer()
@@ -153,11 +200,7 @@ namespace Spinwheel.Views
         private void UpdatePlayerBalance(PlayerBalanceUpdatedEventArgs playerValues)
         {
             UpdateSpinValues();
-            SetPlayerBalance();
-            SetPlayerInitialWin();
-            SetPlayerMultiplier();
-            EnableSpinButton();
-            DisableSpin();
+            _spinMode = SpinMode.Slow;
         }
 
         private void UpdateSpinValues()
@@ -165,6 +208,7 @@ namespace Spinwheel.Views
             _playerBalance = _presenter.GetPlayerBalance();
             _playerMultiplier = _presenter.GetPlayerMultiplier();
             _playerInitialWin = _presenter.GetPlayerIniialWin();
+            _targetMultiplierAngle = WheelHelper.GetAngleForMultiplier(0, _playerMultiplier);
         }
 
         private void SetPlayerBalance()
@@ -175,11 +219,6 @@ namespace Spinwheel.Views
         private void SetPlayerMultiplier()
         {
             _playerMultiplierField.SetText(_playerMultiplier.ToString());
-        }
-
-        private void SetPlayerInitialWin()
-        {
-            _playerInitialWinField.SetText(_playerInitialWin.ToCurrency());
         }
 
         private void DisableSpinButton()
@@ -194,8 +233,20 @@ namespace Spinwheel.Views
             _spinButtonDown.gameObject.SetActive(false);
         }
 
+        private void ResetMultiplier()
+        {
+            _playerMultiplierField.SetText("??");
+        }
+
+        private void ResetInitialWin()
+        {
+            _playerInitialWinField.SetText("XXXXXXXXXX");
+        }
+
         private void SpinWheel()
         {
+            ResetInitialWin();
+            ResetMultiplier();
             EnableSpin();
             DisableSpinButton();
             _presenter.SpinWheel();
