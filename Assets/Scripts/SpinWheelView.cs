@@ -118,12 +118,6 @@ namespace Spinwheel.Views
             _shouldSpin = false;
         }
 
-        private void StopSpin()
-        {
-            SetPlayerMultiplier();
-            EnableSpinButtonAndResetRewards();
-        }
-
         IEnumerator Spin()
         {
             while (_shouldSpin)
@@ -166,28 +160,6 @@ namespace Spinwheel.Views
                     EnableSpinButton();
                 }
             }
-        }
-
-        IEnumerator AnimateCount()
-        {
-            for (float timer = 0; timer < 3f; timer += Time.deltaTime)
-            {
-                float progress = timer / 3f;
-                _playerInitialWinField.SetText(((long) Mathf.Lerp(0, _playerInitialWin, progress)).ToCurrency());
-                _playerBalanceField.SetText(
-                    ((long) Mathf.Lerp(0, _playerBalance, progress)).ToCurrency());
-                yield return null;
-            }
-
-            EnableSpinButtonAndResetRewards();
-        }
-
-        private void EnableSpinButtonAndResetRewards()
-        {
-            // StopCoroutine(AnimateCount());
-            DisableSpin();
-            EnableSpinButton();
-            _spinMode = SpinMode.None;
         }
 
         private void SetPlayer()
