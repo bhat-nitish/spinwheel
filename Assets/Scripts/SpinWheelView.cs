@@ -32,7 +32,7 @@ namespace Spinwheel.Views
 
         private float _normalSpeedMultiplier = 1;
 
-        private float _slowSpeedMultiplier = 0.5f;
+        private float _slowSpeedMultiplier = 0.7f;
 
         private float _stoppingSpeedMultiplier = 0.2f;
 
@@ -134,6 +134,15 @@ namespace Spinwheel.Views
                     while (elapsedTime < randomTimeInSeconds)
                     {
                         _spinWheel.transform.Rotate(0, 0, _slowSpeedMultiplier);
+                        elapsedTime += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+
+                    elapsedTime = 0;
+                    randomTimeInSeconds = Random.Range(1f, 5f);
+                    while (elapsedTime < randomTimeInSeconds)
+                    {
+                        _spinWheel.transform.Rotate(0, 0, _slowSpeedMultiplier / 2);
                         elapsedTime += Time.deltaTime;
                         yield return new WaitForEndOfFrame();
                     }

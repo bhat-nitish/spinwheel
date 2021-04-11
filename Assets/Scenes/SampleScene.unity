@@ -138,6 +138,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerBalanceText
       objectReference: {fileID: 0}
+    - target: {fileID: 2509045733021665280, guid: f77ffe452f75b4bc4b2431ef41cad617,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2509045733021665281, guid: f77ffe452f75b4bc4b2431ef41cad617,
         type: 3}
       propertyPath: m_Material
@@ -147,7 +152,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: b729ec7e9c88049a9ade0e096a3c6553,
+      objectReference: {fileID: 21300000, guid: 9e6191cb4165645ffae5af3fdf6f854c,
         type: 3}
     - target: {fileID: 2509045733021665281, guid: f77ffe452f75b4bc4b2431ef41cad617,
         type: 3}
