@@ -9,6 +9,9 @@ namespace Spinwheel.Models
 {
     public class SpinWheelModel : ISpinWheelModel
     {
+        private readonly List<int> _validMultipliers = new List<int>() {2, 3, 4, 5, 6, 8, 10};
+        private readonly int _defaultMultiplier = 2;
+
         private ISpinWheelService _service;
 
         public PlayerModel _player { get; }
@@ -41,10 +44,35 @@ namespace Spinwheel.Models
                 .Done(() =>
                 {
                     _service.GetPlayerMultiplier()
-                        .Then((multiplier) => { model.Multiplier = multiplier; })
+                        .Then((multiplier) =>
+                        {
+                            model.Multiplier = CheckForValidMultiplierAndHandleInvalid(multiplier);
+                        })
                         .Done(() => { playerSpinPromise.Resolve(model); });
                 });
             return playerSpinPromise;
+        }
+
+
+        /// <summary>
+        /// Checks if the multiplier returned from the service is acceptable, else sets multiplier to a default value
+        /// Acceptable Multipliers are 2,3,4,5,6,8,10
+        /// </summary>
+        /// <param name="multiplier">Multiplier received from the server</param>
+        /// <returns>Multiplier returned from the server if valid, Default Multiplier otherwise</returns>
+        private int CheckForValidMultiplierAndHandleInvalid(int multiplier)
+        {
+            bool isValidMultiplier = _validMultipliers.Contains(multiplier);
+            if (isValidMultiplier)
+            {
+                return multiplier;
+            }
+            else
+            {
+                Debug.Log(
+                    $"Multiplier received from server = {multiplier} and multipler being returned = {_defaultMultiplier}");
+                return _defaultMultiplier;
+            }
         }
 
         public IPromise SetPlayerBalance(long balance)
